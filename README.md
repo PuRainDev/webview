@@ -1,4 +1,4 @@
-# webview go for windows
+# golang webview for windows
 
 
 Note: The original library was written by zserge, I only add few minor changes
@@ -7,7 +7,7 @@ New features (currently windows only):
 - Webview now has additional field Borderless, which is responsible for rendering window without frame.
 - New webview method SetDraggable(bool) which allows us to make window draggable like you are holdind a caption
 
-I also add new example, called frameless-go which shows an example how to use this functionality
+I also add new example, named frameless-go which shows how to use new functionality
 
 ================================================================================
 
