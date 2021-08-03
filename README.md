@@ -29,7 +29,7 @@ If you are interested in writing Webview apps in C/C++, [skip to the next sectio
 Install Webview library with `go get`:
 
 ```
-$ go get github.com/zserge/webview
+$ go get github.com/PuRainDev/webview
 ```
 
 Import the package and start using it:
