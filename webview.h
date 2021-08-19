@@ -162,6 +162,7 @@ WEBVIEW_API int webview_eval(struct webview *w, const char *js);
 WEBVIEW_API int webview_inject_css(struct webview *w, const char *css);
 WEBVIEW_API void webview_set_title(struct webview *w, const char *title);
 WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen);
+WEBVIEW_API void webview_set_size(struct webview *w, int width, int height);
 WEBVIEW_API void webview_set_draggable(struct webview *w, int draggable);
 WEBVIEW_API void webview_set_color(struct webview *w, uint8_t r, uint8_t g,
                                    uint8_t b, uint8_t a);
@@ -1091,7 +1092,7 @@ static int EmbedBrowserObject(struct webview *w) {
   webBrowser2->lpVtbl->put_Width(webBrowser2, rect.right);
   webBrowser2->lpVtbl->put_Height(webBrowser2, rect.bottom);
   webBrowser2->lpVtbl->Release(webBrowser2);
-  webBrowser2->lpVtbl->put_Silent(webBrowser2, VARIANT_TRUE);
+  //webBrowser2->lpVtbl->put_Silent(webBrowser2, VARIANT_TRUE);
 
   return 0;
 error:
@@ -1294,16 +1295,20 @@ WEBVIEW_API int webview_init(struct webview *w) {
   if (!w->resizable) {
     style = WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
   }
-  if (w->borderless) {
-    style = WS_BORDER;
-  }
 
   rect.left = 0;
   rect.top = 0;
   rect.right = w->width;
   rect.bottom = w->height;
-  AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, 0);
-
+  
+  if (w->borderless) {
+    style = WS_BORDER;
+    //rect.right = w->width - 16;
+    //rect.bottom = w->height - 39;
+  } else {
+    AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, 0);
+  }
+  
   GetClientRect(GetDesktopWindow(), &clientRect);
   int left = (clientRect.right / 2) - ((rect.right - rect.left) / 2);
   int top = (clientRect.bottom / 2) - ((rect.bottom - rect.top) / 2);
@@ -1347,12 +1352,10 @@ WEBVIEW_API int webview_loop(struct webview *w, int blocking) {
   switch (msg.message) {
   case WM_QUIT:
     return -1;
-  case WM_MOUSEMOVE: {
+  case WM_MOUSEMOVE:
     if (w->priv.draggable == 1) {
       SendMessage(w->priv.hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
     }
-    break;
-  }
   case WM_COMMAND:
   case WM_KEYDOWN:
   case WM_KEYUP: {
@@ -1453,6 +1456,31 @@ WEBVIEW_API void webview_dispatch(struct webview *w, webview_dispatch_fn fn,
 
 WEBVIEW_API void webview_set_title(struct webview *w, const char *title) {
   SetWindowText(w->priv.hwnd, title);
+}
+
+WEBVIEW_API void webview_set_size(struct webview *w, int width, int height) {
+  
+  RECT rect;
+  RECT clientRect;
+  
+  rect.left = 0;
+  rect.top = 0;
+  rect.right = width;
+  rect.bottom = height;
+  
+  if (!w->borderless) {
+    AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, 0);
+  }
+  
+  GetClientRect(GetDesktopWindow(), &clientRect);
+  int left = (clientRect.right / 2) - ((rect.right - rect.left) / 2);
+  int top = (clientRect.bottom / 2) - ((rect.bottom - rect.top) / 2);
+  rect.right = rect.right - rect.left + left;
+  rect.left = left;
+  rect.bottom = rect.bottom - rect.top + top;
+  rect.top = top;
+
+  SetWindowPos(w->priv.hwnd, 0, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,SWP_SHOWWINDOW|SWP_NOMOVE);
 }
 
 WEBVIEW_API void webview_set_draggable(struct webview *w, int draggable) {

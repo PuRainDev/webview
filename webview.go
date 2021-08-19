@@ -71,6 +71,10 @@ static inline void CgoWebViewSetFullscreen(void *w, int fullscreen) {
 	webview_set_fullscreen((struct webview *)w, fullscreen);
 }
 
+static inline void CgoWebViewSetSize(void *w, int width, int height) {
+	webview_set_size((struct webview *)w, width, height);
+}
+
 static inline void CgoWebViewSetDraggable(void *w, int draggable) {
 	webview_set_draggable((struct webview *)w, draggable);
 }
@@ -206,6 +210,8 @@ type WebView interface {
 	// SetDraggable() controls window drag and drop mode. 
 	// This method must be called from the main thread only
 	SetDraggable(draggable bool)
+	// SetSize() controls window size at runtime
+	SetSize(width int, height int)
 	// SetFullscreen() controls window full-screen mode. This method must be
 	// called from the main thread only. See Dispatch() for more details.
 	SetFullscreen(fullscreen bool)
@@ -352,6 +358,10 @@ func (w *webview) SetColor(r, g, b, a uint8) {
 
 func (w *webview) SetDraggable(draggable bool) {
 	C.CgoWebViewSetDraggable(w.w, C.int(boolToInt(draggable)))
+}
+
+func (w *webview) SetSize(width int, height int) {
+	C.CgoWebViewSetSize(w.w, C.int(width), C.int(height))
 }
 
 func (w *webview) SetFullscreen(fullscreen bool) {
